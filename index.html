@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#302015">
+<title>Philosophy — The Sanctuary of Wisdom</title>
+<style>
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:#21170f}
+body{margin:0;background:#21170f;color:#fff;font-family:Arial,sans-serif}
+header{position:sticky;top:0;z-index:10;background:rgba(35,23,14,.96);padding:12px 14px;text-align:center;border-bottom:1px solid #8d6235}
+header .small{font-size:12px;letter-spacing:2px;color:#e8c58b}
+header h1{font-family:Georgia,serif;font-size:18px;margin:4px 0 0;color:#f0d4a1}
+main{width:100%;max-width:810px;margin:0 auto;padding:10px 0 24px}
+.page{width:100%;position:relative;line-height:0;margin:0 auto 12px;background:#382619;overflow:hidden}
+.page img{display:block;width:100%;height:auto}
+.answer{position:absolute;left:20.74%;top:32.5%;width:60.62%;height:47%;resize:none;border:0;outline:none;background:#fff;color:#282018;padding:3.2%;font:clamp(12px,2.6vw,18px)/1.45 Arial,sans-serif;line-height:1.45;box-shadow:inset 0 0 0 1px rgba(95,65,35,.12);border-radius:0;overflow:auto}
+.answer::placeholder{color:#9c9288;opacity:1}
+.controls{max-width:810px;margin:18px auto 0;padding:0 16px 28px;text-align:center}
+.controls p{font-size:13px;line-height:1.5;color:#e7d6bd}
+button{width:100%;max-width:460px;border:0;border-radius:12px;background:#d5a65f;color:#24170d;padding:15px 18px;font-size:16px;font-weight:700;cursor:pointer}
+button:active{transform:scale(.99)}
+#status{min-height:18px;color:#f0d4a1;font-size:12px}
+footer{text-align:center;color:#bba58b;font-size:11px;padding:0 12px 24px}
+@media(min-width:600px){main{padding-top:18px}.page{margin-bottom:18px}.answer{padding:24px;font-size:18px}}
+</style>
+</head>
+<body>
+<header><div class="small">PHILOSOPHY</div><h1>THE SANCTUARY OF WISDOM</h1></header>
+<main id="pages"></main>
+<section class="controls">
+<button id="download">DOWNLOAD MY ANSWERS (PDF)</button>
+<p>Your answers are saved in this browser on this device. Download your answers before leaving if you need a copy.</p>
+<div id="status" role="status"></div>
+</section>
+<footer>Philosophy · The Sanctuary of Wisdom</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const questions = ["Paano natin maipapakita ang tunay na pangangalaga sa kalikasan, at ano ang ating responsibilidad bilang tao sa pagpapanatili nito para sa susunod na henerasyon?", "Bakit mahalagang pangalagaan ang kultura at tradisyon ng mga T'boli, at paano nakatutulong ang mga ito sa pagpapanatili ng kanilang pagkakakilanlan?", "Paano natin mapapahalagahan ang mga paniniwala at tradisyon ng mga T'boli habang iginagalang ang pagbabago sa modernong lipunan?", "Ano ang ugnayan ng pangangalaga sa kalikasan at paggalang sa kultura ng mga katutubong pamayanan tulad ng mga T'boli?", "Paano natin masusukat ang tunay na malasakit ng tao sa kapwa, kalikasan, at kultura sa pamamagitan ng kanyang mga kilos at desisyon?"];
+const pages = document.getElementById('pages');
+const answerPages = [2,4,6,8,10];
+const fields = [];
+for(let n=1;n<=10;n++){
+  const section=document.createElement('section');
+  section.className='page';
+  const img=document.createElement('img');
+  img.src=`page${n}.jpg`;
+  img.alt=`Original worksheet page ${n}`;
+  img.loading='eager';
+  img.onerror=()=>{document.getElementById('status').textContent=`Page ${n} could not load. Check that page${n}.jpg is uploaded beside index.html in GitHub.`;};
+  section.appendChild(img);
+  if(answerPages.includes(n)){
+    const qIndex=answerPages.indexOf(n);
+    const ta=document.createElement('textarea');
+    ta.className='answer';
+    ta.setAttribute('aria-label',`Answer to question ${qIndex+1}`);
+    ta.placeholder='Type your essay answer here...';
+    ta.dataset.question=qIndex;
+    ta.value=localStorage.getItem(`philosophy-answer-${qIndex}`)||'';
+    ta.addEventListener('input',()=> {
+      try{localStorage.setItem(`philosophy-answer-${qIndex}`,ta.value);document.getElementById('status').textContent='Answers saved on this device.'}
+      catch(e){document.getElementById('status').textContent='Could not save automatically. Download your answers to keep a copy.'}
+    });
+    fields.push(ta);
+    section.appendChild(ta);
+  }
+  pages.appendChild(section);
+}
+document.getElementById('download').addEventListener('click',()=>{
+  const status=document.getElementById('status');
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    status.textContent='The PDF library could not load in this WebView. Check internet access, then try again. If it still fails, the app needs an App Inventor-side export workaround.';
+    return;
+  }
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF({unit:'mm',format:'a4'});
+  pdf.setFont('helvetica','bold');pdf.setFontSize(18);
+  pdf.text('PHILOSOPHY',20,20);
+  pdf.setFont('helvetica','normal');pdf.setFontSize(11);
+  pdf.text('THE SANCTUARY OF WISDOM',20,28);
+  pdf.setFontSize(9);pdf.text('Essay Quiz — Answers',20,35);
+  let y=47;
+  fields.forEach((field,i)=>{
+    const question=questions[i];
+    const answer=field.value.trim()||'(No answer provided)';
+    pdf.setFont('helvetica','bold');pdf.setFontSize(12);
+    const qLines=pdf.splitTextToSize(`Question ${i+1}: ${question}`,170);
+    if(y+qLines.length*6>275){pdf.addPage();y=20;}
+    pdf.text(qLines,20,y);y+=qLines.length*6+4;
+    pdf.setFont('helvetica','normal');pdf.setFontSize(11);
+    const aLines=pdf.splitTextToSize(`Answer: ${answer}`,170);
+    for(let j=0;j<aLines.length;j+=35){
+      const chunk=aLines.slice(j,j+35);
+      if(y+chunk.length*5.5>278){pdf.addPage();y=20;}
+      pdf.text(chunk,20,y);y+=chunk.length*5.5;
+    }
+    y+=12;
+  });
+  pdf.save('Philosophy-My-Answers.pdf');
+  status.textContent='Your answers PDF has been prepared.';
+});
+</script>
+</body>
+</html>
